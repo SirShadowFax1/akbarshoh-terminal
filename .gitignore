@@ -1,0 +1,10 @@
+# Private source files (CV, certificates, photo). Never published.
+assets/originals/
+.private-patterns
+
+# Local tooling
+.claude/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

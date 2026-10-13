@@ -1,0 +1,8 @@
+#!/bin/sh
+# Keeps generated fallbacks in sync with content.js and runs the quick checks.
+if [ -f tools/sync.mjs ]; then
+  node tools/sync.mjs --check || exit 1
+fi
+if [ -f tools/check.mjs ]; then
+  node tools/check.mjs --quick || exit 1
+fi
