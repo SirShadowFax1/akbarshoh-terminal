@@ -354,7 +354,7 @@ function headersFile(hashes) {
   Content-Security-Policy: ${csp}
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   X-Frame-Options: DENY
   Cross-Origin-Opener-Policy: same-origin
 
@@ -398,16 +398,54 @@ function files(dir) {
 
 const PRECACHE_SKIP = /^(sw\.js|_headers|robots\.txt|sitemap\.xml|og\.png|icon-512\.png|icon-maskable-512\.png|docs\/.*|assets\/certs\/(ielts|sat)\.webp|assets\/fonts\/OFL\.txt|assets\/media\/.*)$/;
 
-function serviceWorker(current, outputs) {
+function serviceWorker(current, outputs, v) {
   const onDisk = files(PUB).map((p) => relative(PUB, p).split(sep).join('/'));
   const all = [...new Set([...onDisk, ...outputs.keys()])].filter((p) => p !== 'sw.js' && p !== '_headers').sort();
   const hash = createHash('sha256');
+  hash.update(current.replace(/const VERSION = '[^']*';/, '').replace(/const PRECACHE = \[[\s\S]*?\];/, ''));
   for (const p of all) hash.update(p).update(outputs.get(p) ?? readFileSync(join(PUB, p)));
   const version = hash.digest('hex').slice(0, 12);
-  const precache = ['./', ...all.filter((p) => !PRECACHE_SKIP.test(p))];
+  const precache = ['./', ...all.filter((p) => !PRECACHE_SKIP.test(p)).map((p) => v.get(p) || p)];
   return current
     .replace(/const VERSION = '[^']*';/, `const VERSION = '${version}';`)
     .replace(/const PRECACHE = \[[\s\S]*?\];/, `const PRECACHE = ${JSON.stringify(precache, null, 2).replace(/"/g, "'")};`);
+}
+
+/* ---------- versioned modules ---------- */
+
+// Every script and stylesheet under js/ gets a content-hash URL through an
+// import map, so a cached old module can never be mixed with a new one.
+function versions() {
+  const out = new Map();
+  for (const p of files(join(PUB, 'js'))) {
+    if (!/\.(js|css)$/.test(p)) continue;
+    const rel = relative(PUB, p).split(sep).join('/');
+    out.set(rel, `${rel}?v=${createHash('sha256').update(readFileSync(p)).digest('hex').slice(0, 10)}`);
+  }
+  return out;
+}
+
+function criticalModules() {
+  const seen = new Set();
+  const walk = (rel) => {
+    if (seen.has(rel)) return;
+    seen.add(rel);
+    const src = readFileSync(join(PUB, rel), 'utf8');
+    for (const m of src.matchAll(/^\s*import\s+(?:[^'"]*?from\s+)?['"](\.[^'"]+)['"]/gm)) {
+      walk(new URL(m[1], `https://x/${rel}`).pathname.slice(1));
+    }
+  };
+  walk('js/main.js');
+  return [...seen];
+}
+
+function modulesBlock(v) {
+  const imports = Object.fromEntries([...v].map(([rel, url]) => [`./${rel}`, `./${url}`]));
+  return [
+    `<script type="importmap">${JSON.stringify({ imports })}</script>`,
+    ...criticalModules().filter((r) => r !== 'js/main.js').map((r) => `<link rel="modulepreload" href="${v.get(r)}">`),
+    `<script type="module" src="${v.get('js/main.js')}"></script>`,
+  ].join('\n');
 }
 
 /* ---------- run ---------- */
@@ -416,7 +454,9 @@ const read = (p) => readFileSync(join(PUB, p), 'utf8');
 const outputs = new Map();
 
 let index = read('index.html');
+const moduleVersions = versions();
 index = replaceBlock(index, 'head', headBlock({ title: site.title, description: site.description, path: '' }));
+index = replaceBlock(index, 'modules', modulesBlock(moduleVersions));
 index = replaceBlock(index, 'boot', bootBlock());
 index = replaceBlock(index, 'chips', chipsBlock());
 index = replaceBlock(index, 'noscript', noscriptBlock());
@@ -443,7 +483,7 @@ const pagesChanged = ['index.html', 'plain.html'].some((p) => {
 const oldDate = sitemapOld.match(/<lastmod>([^<]+)<\/lastmod>/)?.[1];
 outputs.set('sitemap.xml', sitemap(!pagesChanged && oldDate ? oldDate : new Date().toISOString().slice(0, 10)));
 outputs.set('_headers', headersFile(inlineHashes(outputs.get('index.html'), outputs.get('plain.html'), outputs.get('404.html'))));
-outputs.set('sw.js', serviceWorker(read('sw.js'), outputs));
+outputs.set('sw.js', serviceWorker(read('sw.js'), outputs, moduleVersions));
 
 let stale = [];
 for (const [name, body] of outputs) {

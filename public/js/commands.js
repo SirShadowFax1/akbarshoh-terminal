@@ -291,7 +291,7 @@ export function prefetchGames() {
 async function startGame(id, t) {
   const load = gameLoaders[id];
   if (!load) return;
-  const [mod] = await Promise.all([load(), t.loadStyle('js/games/games.css')]);
+  const [mod] = await Promise.all([load(), t.loadStyle(import.meta.resolve('./games/games.css'))]);
   mod.start(t);
 }
 
@@ -540,6 +540,7 @@ register({
     const found = resolve(t.cwd, arg);
     if (!found || found.node.type !== 'dir') return notFound('tree', arg, t, allPaths());
     const rows = [line(acc(display(found.parts)))];
+    let widest = 0;
     let dirs = 0;
     let files = 0;
     const draw = (node, path, pad) => {
@@ -548,6 +549,7 @@ register({
         const p = [...path, c.name].join('/');
         const rel = found.parts.length ? p.split('/').slice(found.parts.length).join('/') : p;
         const target = arg === '.' ? rel : `${arg.replace(/\/$/, '')}/${rel}`;
+        widest = Math.max(widest, pad.length + 5 + c.name.length);
         rows.push(h('p', { class: 'ln tree' }, dim(pad + (last ? '└── ' : '├── ')),
           c.type === 'dir' ? cmd(`${c.name}/`, `ls ${target}`, 'dir') : cmd(c.name, `cat ${target}`, 'file')));
         if (c.type === 'dir') {
@@ -558,7 +560,7 @@ register({
     };
     draw(found.node, found.parts, '');
     rows.push(line(dim(`${dirs} directories, ${files} files`)));
-    t.print(rows);
+    t.print(h('div', { class: 'fit', vars: { cols: widest } }, rows));
   },
 });
 register({
