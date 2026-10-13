@@ -13,7 +13,7 @@
 //   }
 
 export const site = {
-  url: 'https://akbarshoh.pages.dev/',
+  url: 'https://akbarshoh-terminal-public.vercel.app/',
   title: 'Akbarshokh Turobov · Terminal portfolio',
   description:
     'Akbarshokh Turobov: student, competitor and programmer from Gulistan, Uzbekistan. ' +

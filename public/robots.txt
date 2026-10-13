@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://akbarshoh.pages.dev/sitemap.xml
+Sitemap: https://akbarshoh-terminal-public.vercel.app/sitemap.xml

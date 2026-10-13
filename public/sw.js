@@ -1,7 +1,7 @@
 // Service worker: makes repeat visits instant and keeps the site usable
 // offline. VERSION and PRECACHE are written by tools/sync.mjs.
 
-const VERSION = 'fca47ddaad1b';
+const VERSION = '37bb9364d42a';
 const PRECACHE = [
   './',
   '404.html',
@@ -17,7 +17,7 @@ const PRECACHE = [
   'icon-192.png',
   'index.html',
   'js/commands.js?v=211a8e15bc',
-  'js/content.js?v=b127e6844a',
+  'js/content.js?v=03996f5012',
   'js/eggs.js?v=b3ab918648',
   'js/fs.js?v=5b06070430',
   'js/games/games.css?v=dbf5fdaca2',
@@ -37,13 +37,29 @@ const CACHE = `akbarshoh-${VERSION}`;
 // Pages go to the network first and fall back to the cached copy offline.
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(PRECACHE.map((url) => new Request(url, { cache: 'reload' }))))
-      .then(() => self.skipWaiting()),
-  );
+  event.waitUntil(precache().then(() => self.skipWaiting()));
 });
+
+// Some hosts redirect page.html to /page. A redirected response cannot be
+// served for a navigation, so each file is stored as a fresh copy, and one
+// failed file does not stop the others from being cached.
+async function precache() {
+  const cache = await caches.open(CACHE);
+  await Promise.all(
+    PRECACHE.map(async (url) => {
+      try {
+        const res = await fetch(new Request(url, { cache: 'reload' }));
+        if (!res.ok && url !== '404.html') return;
+        const copy = res.redirected
+          ? new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers })
+          : res;
+        await cache.put(url, copy);
+      } catch {
+        // Offline during install: this file is cached on its first normal visit.
+      }
+    }),
+  );
+}
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
