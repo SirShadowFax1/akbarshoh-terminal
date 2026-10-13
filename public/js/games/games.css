@@ -1,0 +1,20 @@
+/* Styles for the games, loaded with the first game. */
+.game{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgb(255 255 255/.015);max-width:78ch}
+.typing-target{margin:10px 0 6px;color:var(--dim);font-size:1.05em;line-height:1.8}
+.typing-target .ok{color:var(--fg)}
+.typing-target .bad{color:var(--bg);background:var(--warn);border-radius:2px}
+.typing-target .now{box-shadow:inset 0 -2px 0 var(--acc);color:var(--fg)}
+.typing-stats{font-variant-numeric:tabular-nums}
+.typing-result{margin-top:6px}
+.scramble-moves{margin:8px 0;font-size:1.1em;color:var(--fg);word-spacing:.3ch}
+.net{display:grid;grid-template-columns:repeat(12,14px);grid-template-rows:repeat(9,14px);gap:2px;margin:6px 0}
+.st{display:block;border-radius:2px}
+.st-U{background:#f2f2f2}.st-D{background:#ffd23f}.st-F{background:#2fbf63}.st-B{background:#3a7bf2}.st-L{background:#ff8a2a}.st-R{background:#e8433f}
+.timer{margin:8px 0 4px;font-size:2.6em;line-height:1.2;color:var(--acc);font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgb(var(--acc-rgb)/.3)}
+.game-actions{margin:6px 0}
+.game-btn{font:inherit;color:var(--fg);background:rgb(255 255 255/.04);border:1px solid var(--line);border-radius:8px;padding:6px 14px;min-height:44px;cursor:pointer;margin:0 4px 6px 0}
+.game-btn:hover{border-color:var(--acc)}
+.game-btn.primary{color:var(--bg);background:var(--acc);border-color:var(--acc);min-width:9ch}
+.game-btn:disabled{opacity:.45;cursor:default}
+.times{font-variant-numeric:tabular-nums}
+@media (max-width:420px){.net{grid-template-columns:repeat(12,11px);grid-template-rows:repeat(9,11px)}}
