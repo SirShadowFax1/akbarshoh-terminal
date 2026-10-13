@@ -1,7 +1,7 @@
 // Service worker: makes repeat visits instant and keeps the site usable
 // offline. VERSION and PRECACHE are written by tools/sync.mjs.
 
-const VERSION = '1ecb36937cbb';
+const VERSION = 'fca47ddaad1b';
 const PRECACHE = [
   './',
   '404.html',

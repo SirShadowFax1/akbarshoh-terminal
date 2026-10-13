@@ -181,7 +181,7 @@ function chipsBlock() {
 }
 
 const NOSCRIPT_CSS =
-  '.prompt,.chips,#cmd-help{display:none}.plain-fallback{max-width:76ch;padding-bottom:24px}.plain-fallback h2{color:var(--acc);font-size:1em;margin:24px 0 8px}.plain-fallback h3{font-size:1em;margin:12px 0 2px}.plain-fallback .meta{color:var(--dim);margin:0}.plain-fallback a{color:var(--acc)}.plain-fallback img{max-width:100%;height:auto}.plain-fallback dl div{display:flex;gap:2ch}.plain-fallback dt{color:var(--dim)}.plain-fallback dd{margin:0}';
+  '.prompt,.chips,#cmd-help,.b10{display:none}.plain-fallback{max-width:76ch;padding-bottom:24px}.plain-fallback h2{color:var(--acc);font-size:1em;margin:24px 0 8px}.plain-fallback h3{font-size:1em;margin:12px 0 2px}.plain-fallback .meta{color:var(--dim);margin:0}.plain-fallback a{color:var(--acc)}.plain-fallback img{max-width:100%;height:auto}.plain-fallback dl div{display:flex;gap:2ch}.plain-fallback dt{color:var(--dim)}.plain-fallback dd{margin:0}';
 
 function noscriptBlock() {
   return `<noscript><style>${NOSCRIPT_CSS}</style><div class="plain-fallback"><p>JavaScript is off, so here is everything as plain text. You can also open the <a href="plain.html">plain version</a>.</p>${photoTag(140)}<p>${esc(profile.tagline)}</p>\n${sectionHtml(sections())}</div></noscript>`;
